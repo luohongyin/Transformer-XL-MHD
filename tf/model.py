@@ -239,13 +239,21 @@ def mask_adaptive_logsoftmax(hidden, target, n_token, d_embed, n_head,
     y = x
     if proj is not None:
       y = tf.einsum('ibd,ed->ibe', y, proj)
+
     y = tf.split(
       tf.expand_dims(y, dim=2),
       num_or_size_splits=n_head,
       axis=3
     )
     y = tf.concat(y, axis=2)
-    y = tf.einsum('ibhd,nd->ibhn', y, W) # + b
+
+    W = tf.split(
+      tf.expand_dims(W, dim=0),
+      num_or_size_splits=n_head,
+      axis=2
+    )
+    W = tf.concat(W, axis=0)
+    y = tf.einsum('ibhd,hnd->ibhn', y, W) # + b
     return tf.reduce_max(y, axis=2) + b
 
   params_W, params_projs = params[0], params[1]
