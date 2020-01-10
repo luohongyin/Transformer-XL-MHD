@@ -53,7 +53,7 @@ elif [[ $1 == 'train' ]]; then
         --data_dir=${DATA_ROOT}/tfrecords \
         --record_info_dir=${DATA_ROOT}/tfrecords/ \
         --corpus_info_path=${DATA_ROOT}/corpus-info.json \
-        --model_dir=EXP-wt103 \
+        --model_dir=EXP-wt103-MHD \
         --div_val=${DIV_VAL} \
         --untie_r=True \
         --proj_share_all_but_first=True \
@@ -81,7 +81,7 @@ elif [[ $1 == 'eval' ]]; then
         --data_dir=${DATA_ROOT}/tfrecords \
         --record_info_dir=${DATA_ROOT}/tfrecords/ \
         --corpus_info_path=${DATA_ROOT}/corpus-info.json \
-        --model_dir=EXP-wt103 \
+        --model_dir=EXP-wt103-MHD \
         --div_val=${DIV_VAL} \
         --untie_r=True \
         --proj_share_all_but_first=True \
