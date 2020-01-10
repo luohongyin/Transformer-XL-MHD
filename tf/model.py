@@ -226,17 +226,27 @@ def mul_adaptive_embedding_lookup(x, n_token, d_embed, d_proj, cutoffs, initiali
   return y, ret_params
 
 
-def mask_adaptive_logsoftmax(hidden, target, n_token, d_embed, d_proj, cutoffs,
-                             params, tie_projs,
+def mask_adaptive_logsoftmax(hidden, target, n_token, d_embed, n_head,
+                             d_proj, cutoffs, params, tie_projs,
                              initializer=None, proj_initializer=None,
                              div_val=1, scope='adaptive_softmax',
                              proj_same_dim=True,
                              return_mean=True, **kwargs):
+  
+  # d_head = d_embed / n_head
+
   def _logit(x, W, b, proj):
     y = x
     if proj is not None:
       y = tf.einsum('ibd,ed->ibe', y, proj)
-    return tf.einsum('ibd,nd->ibn', y, W) + b
+    y = tf.split(
+      tf.expand_dims(y, dim=2),
+      num_or_size_splits=n_head,
+      axis=3
+    )
+    y = tf.concat(y, axis=2)
+    y = tf.einsum('ibhd,nd->ibhn', y, W) # + b
+    return tf.reduce_max(y, axis=2) + b
 
   params_W, params_projs = params[0], params[1]
 
@@ -308,8 +318,8 @@ def mask_adaptive_logsoftmax(hidden, target, n_token, d_embed, d_proj, cutoffs,
   return nll
 
 
-def mul_adaptive_logsoftmax(hidden, target, n_token, d_embed, d_proj, cutoffs,
-                            params, tie_projs,
+def mul_adaptive_logsoftmax(hidden, target, n_token, d_embed, n_head, d_proj,
+                            cutoffs, params, tie_projs,
                             initializer=None, proj_initializer=None,
                             div_val=1, perms=None, proj_same_dim=True,
                             scope='adaptive_softmax',
@@ -532,6 +542,7 @@ def transformer(dec_inp, target, mems, n_token, n_layer, d_model, d_embed,
         target=target,
         n_token=n_token,
         d_embed=d_embed,
+        n_head=n_head,
         d_proj=d_model,
         cutoffs=cutoffs,
         params=shared_params,
