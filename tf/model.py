@@ -259,8 +259,8 @@ def mask_adaptive_logsoftmax(hidden, target, n_token, d_embed, n_head,
       axis=2
     )
     W = tf.concat(W, axis=0)
-    y = tf.einsum('ibhd,hnd->ibhn', y, W) # + b
-    y = tf.reduce_sum(tf.nn.relu(y), axis=2) + b
+    y = tf.einsum('ibhd,hnd->ibhn', y, W) + b
+    # y = tf.reduce_sum(tf.nn.relu(y), axis=2) + b
     # y = (tf.reduce_max(y, axis=2) + b) * 4
     return y
 
@@ -317,6 +317,7 @@ def mask_adaptive_logsoftmax(hidden, target, n_token, d_embed, n_head,
 
             head_logit = _logit(hidden, cur_W, cur_b, cur_proj)
             head_logprob = tf.nn.log_softmax(head_logit)
+            head_logprob = tf.reduce_mean(head_logprob, axis=2)
             cur_head_logprob = tf.boolean_mask(head_logprob, mask)
             cur_logprob = _gather_logprob(cur_head_logprob, cur_target)
           else:
@@ -325,6 +326,7 @@ def mask_adaptive_logsoftmax(hidden, target, n_token, d_embed, n_head,
             tail_logit = tf.squeeze(_logit(
                 cur_hidden[None], cur_W, cur_b, cur_proj), 0)
             tail_logprob = tf.nn.log_softmax(tail_logit)
+            tail_logprob = tf.reduce_mean(tail_logprob, axis=2)
             cur_logprob = (cur_head_logprob[:, cutoff_ends[1] + i - 1] +
                            _gather_logprob(tail_logprob, cur_target))
           nll += tf.scatter_nd(mask_idx, -cur_logprob,
