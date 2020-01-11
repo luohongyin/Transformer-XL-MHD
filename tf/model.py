@@ -260,7 +260,7 @@ def mask_adaptive_logsoftmax(hidden, target, n_token, d_embed, n_head,
     )
     W = tf.concat(W, axis=0)
     y = tf.einsum('ibhd,hnd->ibhn', y, W) # + b
-    return tf.reduce_max(y, axis=2) + b
+    return (tf.reduce_max(y, axis=2) + b) * 4
 
   params_W, params_projs = params[0], params[1]
 
