@@ -1,0 +1,5 @@
+*.pyc
+
+data/*
+tf/pretrained_xl/*
+tf/xl-*
