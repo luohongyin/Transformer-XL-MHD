@@ -235,6 +235,12 @@ def mask_adaptive_logsoftmax(hidden, target, n_token, d_embed, n_head,
   
   # d_head = d_embed / n_head
 
+  def _logit2(x, W, b, proj):
+    y = x
+    if proj is not None:
+      y = tf.einsum('ibd,ed->ibe', y, proj)
+    return tf.einsum('ibd,nd->ibn', y, W) + b
+
   def _logit(x, W, b, proj):
     y = x
     if proj is not None:
