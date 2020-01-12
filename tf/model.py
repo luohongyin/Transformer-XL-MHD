@@ -294,7 +294,7 @@ def mask_adaptive_logsoftmax(hidden, target, n_token, d_embed, n_head,
             cur_W = params_W[l_idx: r_idx]
           else:
             cur_W = params_W[i]
-          cur_b = tf.get_variable('b', [r_idx - l_idx],
+          cur_b = tf.get_variable('b', [n_head, r_idx - l_idx],
                                   initializer=tf.zeros_initializer())
           if tie_projs[i]:
             if div_val == 1:
